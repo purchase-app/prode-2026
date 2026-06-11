@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Los Inexpertos del Prode — Mundial 2026</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap');
+:root{
+  --or:#f0c040;--ors:#f7d96b;--vd:#1a472a;--vdc:#2d6a4f;--vdf:#1e3d28;
+  --bl:#f5f5f0;--gm:#8a9a84;--go:#4a5a44;
+  --fd:#0e1a0e;--tc:#162015;--tc2:#1a2a18;--bo:#263825;
+  --ro:#e05252;--az:#5b9bd5;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow-x:hidden}
+body{background:var(--fd);color:var(--bl);font-family:'Inter',sans-serif;font-size:14px;min-height:100vh}
+
+.hdr{background:linear-gradient(135deg,#091409 0%,#1a472a 55%,#091409 100%);border-bottom:2px solid var(--or);padding:12px 14px 10px;display:flex;align-items:center;justify-content:space-between;gap:10px;position:sticky;top:0;z-index:100}
+.hdr-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;color:var(--or);line-height:1}
+.hdr-sub{font-size:9px;color:var(--gm);letter-spacing:2px;text-transform:uppercase;margin-top:1px}
+.hdr-right{display:flex;align-items:center;gap:8px}
+.hdr-badge{background:var(--or);color:var(--vd);font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:1px;padding:3px 7px;border-radius:2px;white-space:nowrap}
+.sync-dot{width:8px;height:8px;border-radius:50%;background:var(--go);flex-shrink:0;transition:background .3s}
+.sync-dot.ok{background:#6db88a}
+.sync-dot.err{background:var(--ro)}
+.sync-dot.loading{background:var(--or);animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+.bnav{position:fixed;bottom:0;left:0;right:0;background:#0a130a;border-top:1px solid var(--bo);display:flex;z-index:200;padding-bottom:env(safe-area-inset-bottom,0)}
+.bnav-tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 2px 6px;gap:2px;font-size:9px;letter-spacing:.5px;text-transform:uppercase;color:var(--go);cursor:pointer;border:none;background:none;font-family:'Inter',sans-serif;transition:color .2s}
+.bnav-tab .ic{font-size:20px;line-height:1}
+.bnav-tab.active{color:var(--or)}
+
+.content{padding:10px 10px 80px;max-width:680px;margin:0 auto}
+.section{display:none}.section.active{display:block}
+
+.card{background:var(--tc);border:1px solid var(--bo);border-radius:10px;padding:14px;margin-bottom:12px}
+.card-title{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:1.5px;color:var(--or);margin-bottom:12px;display:flex;align-items:center;gap:7px}
+
+.grupo-hdr{display:flex;align-items:center;gap:7px;padding:7px 10px;margin-bottom:4px;font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:2px;color:var(--ors)}
+
+.pc{background:var(--tc2);border:1px solid var(--bo);border-radius:10px;margin-bottom:10px;overflow:hidden}
+.pc-fase{background:var(--vdf);padding:5px 12px;display:flex;align-items:center;justify-content:space-between}
+.pc-fase-tag{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--ors);font-weight:600}
+.pc-fecha{font-size:9px;color:var(--gm)}
+.pc-body{padding:12px}
+
+.eq-row{display:grid;grid-template-columns:1fr 36px 1fr;align-items:center;gap:6px;margin-bottom:12px}
+.eq-name{font-weight:700;font-size:13px;text-align:center;line-height:1.2}
+.vs{background:var(--vdc);color:var(--or);font-family:'Bebas Neue',sans-serif;font-size:14px;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+
+.res-row{display:flex;align-items:center;justify-content:center;gap:7px;margin-bottom:12px}
+.res-lbl{font-size:10px;color:var(--gm);letter-spacing:1px;text-transform:uppercase}
+.si{background:var(--tc);border:1.5px solid var(--bo);color:var(--bl);width:42px;height:38px;border-radius:6px;text-align:center;font-size:18px;font-weight:700;font-family:'Inter',sans-serif;outline:none;transition:border-color .2s}
+.si:focus{border-color:var(--or)}
+.ss{font-size:18px;font-weight:700;color:var(--gm)}
+.res-badge{background:rgba(240,192,64,.15);border:1px solid rgba(240,192,64,.3);color:var(--ors);font-size:13px;font-weight:700;padding:4px 10px;border-radius:5px}
+
+.preds-lbl{font-size:9px;color:var(--gm);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:7px}
+.preds-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
+.pred-cell{background:var(--tc);border:1px solid var(--bo);border-radius:7px;padding:6px 5px;display:flex;flex-direction:column;align-items:center;gap:4px;position:relative}
+.pred-cell.saving::after{content:'';position:absolute;top:4px;right:4px;width:5px;height:5px;border-radius:50%;background:var(--or);animation:pulse 1s infinite}
+.pred-n{font-size:9px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;text-align:center}
+.pred-ins{display:flex;align-items:center;gap:3px}
+.pi{background:var(--tc2);border:1px solid var(--bo);color:var(--bl);width:26px;height:26px;border-radius:4px;text-align:center;font-size:13px;font-weight:700;font-family:'Inter',sans-serif;outline:none}
+.pi:focus{border-color:var(--or)}
+.psp{font-size:13px;color:var(--gm);font-weight:700}
+.pred-pts{font-size:10px;font-weight:700;min-height:13px;text-align:center}
+.p6{color:var(--or)}.p3{color:#6db88a}.p0{color:var(--go)}
+
+.sim-wrap{margin-top:10px;padding-top:10px;border-top:1px solid var(--bo)}
+.sim-lbl{font-size:9px;color:var(--gm);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:7px}
+.sim-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
+.sim-card{background:var(--tc);border:1px solid var(--bo);border-radius:7px;padding:8px 5px;text-align:center}
+.sim-esc{font-size:9px;color:var(--gm);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;line-height:1.2}
+.sim-pts{font-family:'Bebas Neue',sans-serif;font-size:24px;color:var(--or);line-height:1}
+.sim-det{margin-top:5px;display:flex;flex-direction:column;gap:1px}
+.sim-r{display:flex;justify-content:space-between;font-size:10px;padding:1px 0}
+
+.rk-row{display:flex;align-items:center;gap:9px;padding:10px 0;border-bottom:1px solid var(--bo)}
+.rk-row:last-child{border-bottom:none}
+.rk-pos{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--go);width:22px;text-align:center;line-height:1}
+.rk-pos.g1{color:var(--or)}.rk-pos.g2{color:#c0c0c0}.rk-pos.g3{color:#cd7f32}
+.rk-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.rk-info{flex:1;min-width:0}
+.rk-nombre{font-weight:700;font-size:14px}
+.rk-bar-bg{background:var(--bo);border-radius:2px;height:4px;margin-top:5px}
+.rk-bar-f{height:4px;border-radius:2px;transition:width .6s}
+.rk-stats{font-size:10px;color:var(--gm);margin-top:3px}
+.rk-pts{font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--or);line-height:1}
+
+.ec{background:var(--tc2);border:1px solid var(--bo);border-radius:8px;padding:11px;margin-bottom:8px;display:flex;gap:9px}
+.ec-ic{font-size:20px;flex-shrink:0;margin-top:1px}
+.ec-t{font-weight:700;font-size:12px;color:var(--ors);margin-bottom:3px}
+.ec-d{font-size:11px;color:var(--gm);line-height:1.5}
+.hl{color:var(--bl);font-weight:600}
+
+.pts-sys-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:4px}
+.psg{background:var(--tc2);border:1px solid var(--bo);border-radius:8px;padding:12px;text-align:center}
+.psg-n{font-family:'Bebas Neue',sans-serif;font-size:34px;line-height:1}
+.psg-l{font-size:9px;color:var(--gm);letter-spacing:1px;text-transform:uppercase;margin-top:2px}
+.psg-d{font-size:11px;color:var(--bl);margin-top:5px}
+
+.btn{padding:9px 14px;border:none;border-radius:6px;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;font-family:'Inter',sans-serif}
+.btn-or{background:var(--or);color:var(--vd)}.btn-gh{background:transparent;border:1px solid var(--bo);color:var(--gm)}
+input[type=text],select{background:var(--tc2);border:1px solid var(--bo);color:var(--bl);padding:9px 10px;border-radius:6px;font-size:13px;font-family:'Inter',sans-serif;outline:none;width:100%}
+input[type=text]:focus,select:focus{border-color:var(--or)}
+label{font-size:10px;color:var(--gm);letter-spacing:1px;text-transform:uppercase;display:block;margin-bottom:4px}
+.persona-chip{display:inline-flex;align-items:center;gap:6px;background:var(--tc2);border:1px solid var(--bo);border-radius:6px;padding:6px 10px;font-size:12px;font-weight:600;margin:3px}
+.pc-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.flex{display:flex}.gap8{gap:8px}.wrap{flex-wrap:wrap}
+.mt8{margin-top:8px}.mb8{margin-bottom:8px}.w-full{width:100%}
+hr.dv{border:none;border-top:1px solid var(--bo);margin:12px 0}
+.empty{text-align:center;padding:30px 14px;color:var(--gm);font-size:12px}
+.empty .big{font-size:34px;margin-bottom:8px}
+
+/* PERSONA SELECTOR */
+.persona-selector{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
+.persona-selector-title{font-size:11px;color:var(--gm);letter-spacing:1px;text-transform:uppercase}
+.persona-btns{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.persona-btn{padding:10px 6px;border:1.5px solid var(--bo);border-radius:8px;background:var(--tc2);color:var(--gm);font-size:11px;font-weight:600;cursor:pointer;text-align:center;transition:all .2s;font-family:'Inter',sans-serif}
+.persona-btn.selected{border-color:var(--or);color:var(--or);background:rgba(240,192,64,.1)}
+
+.toast{position:fixed;top:70px;left:50%;transform:translateX(-50%);background:#1a2a18;border:1px solid var(--or);color:var(--bl);padding:8px 16px;border-radius:6px;font-size:12px;font-weight:600;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div>
+    <div class="hdr-title">⚽ Los Inexpertos</div>
+    <div class="hdr-sub">Prode Mundial 2026</div>
+  </div>
+  <div class="hdr-right">
+    <div class="sync-dot loading" id="sync-dot" title="Conectando..."></div>
+    <div class="hdr-badge">EN VIVO</div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<div class="content">
+
+  <!-- SELECTOR DE PERSONA (primera vez) -->
+  <div id="persona-setup" style="display:none">
+    <div class="card">
+      <div class="card-title">👋 ¿Quién sos?</div>
+      <p style="font-size:12px;color:var(--gm);margin-bottom:14px">Elegí tu nombre para cargar tus predicciones. Tus datos se van a sincronizar en tiempo real con el resto del grupo.</p>
+      <div class="persona-btns" id="persona-btns-setup"></div>
+    </div>
+  </div>
+
+  <div id="app-content" style="display:none">
+
+    <!-- Banner persona activa -->
+    <div id="banner-persona" style="background:var(--tc);border:1px solid rgba(240,192,64,.3);border-radius:8px;padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between">
+      <div style="display:flex;align-items:center;gap:8px">
+        <div id="banner-dot" style="width:10px;height:10px;border-radius:50%"></div>
+        <span style="font-size:12px;color:var(--gm)">Cargando como</span>
+        <span id="banner-nombre" style="font-weight:700;font-size:13px;color:var(--or)"></span>
+      </div>
+      <button onclick="cambiarPersona()" style="font-size:10px;color:var(--gm);background:none;border:none;cursor:pointer;text-decoration:underline">cambiar</button>
+    </div>
+
+    <div class="section active" id="tab-partidos">
+      <div id="grupos-lista"></div>
+    </div>
+
+    <div class="section" id="tab-ranking">
+      <div class="card"><div class="card-title">🏆 Tabla General</div><div id="tabla-ranking"></div></div>
+      <div class="card"><div class="card-title">📊 Detalle por Partido</div><div id="resumen-partidos"></div></div>
+    </div>
+
+    <div class="section" id="tab-estrategia">
+      <div class="card">
+        <div class="card-title">⚖️ Sistema de Puntos</div>
+        <div class="pts-sys-grid">
+          <div class="psg"><div class="psg-n" style="color:var(--or)">+6</div><div class="psg-l">Exacto</div><div class="psg-d">Marcador correcto de los dos equipos</div></div>
+          <div class="psg"><div class="psg-n" style="color:#6db88a">+3</div><div class="psg-l">Ganador</div><div class="psg-d">Acertás quién gana o si hay empate</div></div>
+          <div class="psg"><div class="psg-n" style="color:var(--go)">0</div><div class="psg-l">Incorrecto</div><div class="psg-d">El resultado fue distinto</div></div>
+          <div class="psg"><div class="psg-n" style="color:var(--or)">Σ</div><div class="psg-l">Total equipo</div><div class="psg-d">Se suman los puntos de las 6 personas</div></div>
+        </div>
+      </div>
+      <div class="card"><div class="card-title">🧠 Estrategia del Grupo</div><div id="analisis-estrategia"></div></div>
+    </div>
+
+    <div class="section" id="tab-config">
+      <div class="card">
+        <div class="card-title">➕ Agregar Partido</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div class="grid2">
+            <div><label>Local</label><input type="text" id="inp-local" placeholder="ej: Argentina"></div>
+            <div><label>Visitante</label><input type="text" id="inp-visitante" placeholder="ej: Brasil"></div>
+          </div>
+          <div class="grid2">
+            <div><label>Fecha</label><input type="text" id="inp-fecha" placeholder="ej: 11 Jun"></div>
+            <div><label>Fase</label>
+              <select id="inp-fase">
+                <option>Grupo A</option><option>Grupo B</option><option>Grupo C</option><option>Grupo D</option>
+                <option>Grupo E</option><option>Grupo F</option><option>Grupo G</option><option>Grupo H</option>
+                <option>Grupo I</option><option>Grupo J</option><option>Grupo K</option><option>Grupo L</option>
+                <option>16avos</option><option>Octavos</option><option>Cuartos</option>
+                <option>Semis</option><option>3er Puesto</option><option>Final</option>
+              </select>
+            </div>
+          </div>
+          <button class="btn btn-or" onclick="agregarPartido()">Agregar Partido</button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /app-content -->
+</div>
+
+<nav class="bnav" id="bottom-nav" style="display:none">
+  <button class="bnav-tab active" onclick="showTab('partidos',this)"><span class="ic">⚽</span>Partidos</button>
+  <button class="bnav-tab" onclick="showTab('ranking',this)"><span class="ic">🏆</span>Ranking</button>
+  <button class="bnav-tab" onclick="showTab('estrategia',this)"><span class="ic">🧠</span>Estrategia</button>
+  <button class="bnav-tab" onclick="showTab('config',this)"><span class="ic">⚙️</span>Config</button>
+</nav>
+
+<script type="module">
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+// ── CONFIG ───────────────────────────────────────────────────────────────────
+const SUPA_URL = 'https://kuxxmiupluaxwlrpnjrt.supabase.co';
+const SUPA_KEY = 'sb_publishable_ftOVcIJYc1XIWLly6GQeeQ_0LW4Ylkd';
+const sb = createClient(SUPA_URL, SUPA_KEY);
+
+const PERSONAS = ['Lucas','Rocio','Leo','Gonzalo','Lautaro','Nico'];
+const COLORS   = ['#f0c040','#e05252','#5b9bd5','#6db88a','#e08c5b','#c087d4'];
+
+const FIXTURE = [
+  {id:'A1',local:'México',visitante:'Sudáfrica',fase:'Grupo A',fecha:'11 Jun'},
+  {id:'A2',local:'Corea del Sur',visitante:'Rep. Checa',fase:'Grupo A',fecha:'12 Jun'},
+  {id:'A3',local:'Rep. Checa',visitante:'Sudáfrica',fase:'Grupo A',fecha:'18 Jun'},
+  {id:'A4',local:'México',visitante:'Corea del Sur',fase:'Grupo A',fecha:'19 Jun'},
+  {id:'A5',local:'Rep. Checa',visitante:'México',fase:'Grupo A',fecha:'25 Jun'},
+  {id:'A6',local:'Sudáfrica',visitante:'Corea del Sur',fase:'Grupo A',fecha:'25 Jun'},
+  {id:'B1',local:'Canadá',visitante:'Bosnia',fase:'Grupo B',fecha:'12 Jun'},
+  {id:'B2',local:'Qatar',visitante:'Suiza',fase:'Grupo B',fecha:'13 Jun'},
+  {id:'B3',local:'Suiza',visitante:'Bosnia',fase:'Grupo B',fecha:'18 Jun'},
+  {id:'B4',local:'Canadá',visitante:'Qatar',fase:'Grupo B',fecha:'19 Jun'},
+  {id:'B5',local:'Suiza',visitante:'Canadá',fase:'Grupo B',fecha:'24 Jun'},
+  {id:'B6',local:'Bosnia',visitante:'Qatar',fase:'Grupo B',fecha:'24 Jun'},
+  {id:'C1',local:'Brasil',visitante:'Marruecos',fase:'Grupo C',fecha:'14 Jun'},
+  {id:'C2',local:'Haití',visitante:'Escocia',fase:'Grupo C',fecha:'14 Jun'},
+  {id:'C3',local:'Brasil',visitante:'Haití',fase:'Grupo C',fecha:'20 Jun'},
+  {id:'C4',local:'Escocia',visitante:'Marruecos',fase:'Grupo C',fecha:'20 Jun'},
+  {id:'C5',local:'Escocia',visitante:'Brasil',fase:'Grupo C',fecha:'25 Jun'},
+  {id:'C6',local:'Marruecos',visitante:'Haití',fase:'Grupo C',fecha:'25 Jun'},
+  {id:'D1',local:'Estados Unidos',visitante:'Paraguay',fase:'Grupo D',fecha:'13 Jun'},
+  {id:'D2',local:'Australia',visitante:'Turquía',fase:'Grupo D',fecha:'13 Jun'},
+  {id:'D3',local:'Turquía',visitante:'Paraguay',fase:'Grupo D',fecha:'19 Jun'},
+  {id:'D4',local:'Estados Unidos',visitante:'Australia',fase:'Grupo D',fecha:'19 Jun'},
+  {id:'D5',local:'Turquía',visitante:'Estados Unidos',fase:'Grupo D',fecha:'26 Jun'},
+  {id:'D6',local:'Paraguay',visitante:'Australia',fase:'Grupo D',fecha:'26 Jun'},
+  {id:'E1',local:'Alemania',visitante:'Curazao',fase:'Grupo E',fecha:'14 Jun'},
+  {id:'E2',local:'Costa de Marfil',visitante:'Ecuador',fase:'Grupo E',fecha:'15 Jun'},
+  {id:'E3',local:'Alemania',visitante:'Costa de Marfil',fase:'Grupo E',fecha:'21 Jun'},
+  {id:'E4',local:'Ecuador',visitante:'Curazao',fase:'Grupo E',fecha:'21 Jun'},
+  {id:'E5',local:'Ecuador',visitante:'Alemania',fase:'Grupo E',fecha:'26 Jun'},
+  {id:'E6',local:'Curazao',visitante:'Costa de Marfil',fase:'Grupo E',fecha:'26 Jun'},
+  {id:'F1',local:'Países Bajos',visitante:'Japón',fase:'Grupo F',fecha:'15 Jun'},
+  {id:'F2',local:'Suecia',visitante:'Túnez',fase:'Grupo F',fecha:'15 Jun'},
+  {id:'F3',local:'Países Bajos',visitante:'Suecia',fase:'Grupo F',fecha:'20 Jun'},
+  {id:'F4',local:'Túnez',visitante:'Japón',fase:'Grupo F',fecha:'20 Jun'},
+  {id:'F5',local:'Túnez',visitante:'Países Bajos',fase:'Grupo F',fecha:'26 Jun'},
+  {id:'F6',local:'Japón',visitante:'Suecia',fase:'Grupo F',fecha:'26 Jun'},
+  {id:'G1',local:'Bélgica',visitante:'Egipto',fase:'Grupo G',fecha:'15 Jun'},
+  {id:'G2',local:'Irán',visitante:'Nueva Zelanda',fase:'Grupo G',fecha:'16 Jun'},
+  {id:'G3',local:'Bélgica',visitante:'Irán',fase:'Grupo G',fecha:'22 Jun'},
+  {id:'G4',local:'Nueva Zelanda',visitante:'Egipto',fase:'Grupo G',fecha:'22 Jun'},
+  {id:'G5',local:'Nueva Zelanda',visitante:'Bélgica',fase:'Grupo G',fecha:'27 Jun'},
+  {id:'G6',local:'Egipto',visitante:'Irán',fase:'Grupo G',fecha:'27 Jun'},
+  {id:'H1',local:'España',visitante:'Cabo Verde',fase:'Grupo H',fecha:'15 Jun'},
+  {id:'H2',local:'Arabia Saudí',visitante:'Uruguay',fase:'Grupo H',fecha:'16 Jun'},
+  {id:'H3',local:'España',visitante:'Arabia Saudí',fase:'Grupo H',fecha:'21 Jun'},
+  {id:'H4',local:'Uruguay',visitante:'Cabo Verde',fase:'Grupo H',fecha:'22 Jun'},
+  {id:'H5',local:'Uruguay',visitante:'España',fase:'Grupo H',fecha:'27 Jun'},
+  {id:'H6',local:'Cabo Verde',visitante:'Arabia Saudí',fase:'Grupo H',fecha:'27 Jun'},
+  {id:'I1',local:'Francia',visitante:'Senegal',fase:'Grupo I',fecha:'16 Jun'},
+  {id:'I2',local:'Irak',visitante:'Noruega',fase:'Grupo I',fecha:'17 Jun'},
+  {id:'I3',local:'Francia',visitante:'Irak',fase:'Grupo I',fecha:'22 Jun'},
+  {id:'I4',local:'Noruega',visitante:'Senegal',fase:'Grupo I',fecha:'23 Jun'},
+  {id:'I5',local:'Noruega',visitante:'Francia',fase:'Grupo I',fecha:'26 Jun'},
+  {id:'I6',local:'Senegal',visitante:'Irak',fase:'Grupo I',fecha:'26 Jun'},
+  {id:'J1',local:'Argentina',visitante:'Argelia',fase:'Grupo J',fecha:'17 Jun'},
+  {id:'J2',local:'Austria',visitante:'Jordania',fase:'Grupo J',fecha:'17 Jun'},
+  {id:'J3',local:'Argentina',visitante:'Austria',fase:'Grupo J',fecha:'22 Jun'},
+  {id:'J4',local:'Jordania',visitante:'Argelia',fase:'Grupo J',fecha:'23 Jun'},
+  {id:'J5',local:'Jordania',visitante:'Argentina',fase:'Grupo J',fecha:'28 Jun'},
+  {id:'J6',local:'Argelia',visitante:'Austria',fase:'Grupo J',fecha:'28 Jun'},
+  {id:'K1',local:'Portugal',visitante:'RD Congo',fase:'Grupo K',fecha:'17 Jun'},
+  {id:'K2',local:'Uzbekistán',visitante:'Colombia',fase:'Grupo K',fecha:'18 Jun'},
+  {id:'K3',local:'Portugal',visitante:'Uzbekistán',fase:'Grupo K',fecha:'23 Jun'},
+  {id:'K4',local:'Colombia',visitante:'RD Congo',fase:'Grupo K',fecha:'24 Jun'},
+  {id:'K5',local:'Colombia',visitante:'Portugal',fase:'Grupo K',fecha:'28 Jun'},
+  {id:'K6',local:'RD Congo',visitante:'Uzbekistán',fase:'Grupo K',fecha:'28 Jun'},
+  {id:'L1',local:'Inglaterra',visitante:'Croacia',fase:'Grupo L',fecha:'17 Jun'},
+  {id:'L2',local:'Ghana',visitante:'Panamá',fase:'Grupo L',fecha:'18 Jun'},
+  {id:'L3',local:'Inglaterra',visitante:'Ghana',fase:'Grupo L',fecha:'23 Jun'},
+  {id:'L4',local:'Panamá',visitante:'Croacia',fase:'Grupo L',fecha:'23 Jun'},
+  {id:'L5',local:'Panamá',visitante:'Inglaterra',fase:'Grupo L',fecha:'27 Jun'},
+  {id:'L6',local:'Croacia',visitante:'Ghana',fase:'Grupo L',fecha:'27 Jun'},
+];
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+let miPersona = localStorage.getItem('prode_persona') || null;
+// predicciones[partido_id][persona] = {local, visitante}
+let predicciones = {};
+// resultados[partido_id] = {local, visitante}
+let resultados = {};
+// partidos extra agregados
+let partidosExtra = JSON.parse(localStorage.getItem('prode_extra')||'[]');
+
+function todosPartidos(){
+  return [...FIXTURE, ...partidosExtra];
+}
+
+// ── HELPERS ───────────────────────────────────────────────────────────────────
+function calcPts(pL,pV,rL,rV){
+  if(rL==null||rV==null||pL==null||pV==null)return null;
+  const pl=parseInt(pL),pv=parseInt(pV),rl=parseInt(rL),rv=parseInt(rV);
+  if(isNaN(pl)||isNaN(pv)||isNaN(rl)||isNaN(rv))return null;
+  if(pl===rl&&pv===rv)return 6;
+  const pw=pl>pv?'L':pl<pv?'V':'E',rw=rl>rv?'L':rl<rv?'V':'E';
+  return pw===rw?3:0;
+}
+function gw(l,v){
+  const a=parseInt(l),b=parseInt(v);
+  if(isNaN(a)||isNaN(b))return null;
+  return a>b?'L':a<b?'V':'E';
+}
+function setSyncDot(state){
+  const d=document.getElementById('sync-dot');
+  d.className='sync-dot '+state;
+}
+function toast(msg,duration=2500){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),duration);
+}
+
+// ── SUPABASE HELPERS ──────────────────────────────────────────────────────────
+async function cargarTodo(){
+  setSyncDot('loading');
+  try{
+    const[{data:preds},{data:ress}]=await Promise.all([
+      sb.from('predicciones').select('*'),
+      sb.from('resultados').select('*'),
+    ]);
+    predicciones={};
+    (preds||[]).forEach(r=>{
+      if(!predicciones[r.partido_id])predicciones[r.partido_id]={};
+      predicciones[r.partido_id][r.persona]={local:r.pred_local,visitante:r.pred_visitante};
+    });
+    resultados={};
+    (ress||[]).forEach(r=>{
+      resultados[r.partido_id]={local:r.resultado_local,visitante:r.resultado_visitante};
+    });
+    setSyncDot('ok');
+    renderPartidos();
+    renderRanking();
+    renderEstrategia();
+  }catch(e){
+    setSyncDot('err');
+    toast('❌ Error de conexión');
+  }
+}
+
+async function guardarPrediccion(partidoId,persona,pL,pV){
+  setSyncDot('loading');
+  const{error}=await sb.from('predicciones').upsert(
+    {partido_id:partidoId,persona,pred_local:parseInt(pL),pred_visitante:parseInt(pV),updated_at:new Date().toISOString()},
+    {onConflict:'partido_id,persona'}
+  );
+  if(error){setSyncDot('err');toast('❌ No se pudo guardar');}
+  else{setSyncDot('ok');toast('✓ Guardado');}
+}
+
+async function guardarResultado(partidoId,rL,rV){
+  setSyncDot('loading');
+  const{error}=await sb.from('resultados').upsert(
+    {partido_id:partidoId,resultado_local:parseInt(rL),resultado_visitante:parseInt(rV),updated_at:new Date().toISOString()},
+    {onConflict:'partido_id'}
+  );
+  if(error){setSyncDot('err');toast('❌ No se pudo guardar resultado');}
+  else{setSyncDot('ok');toast('✓ Resultado guardado');}
+}
+
+// ── REALTIME ──────────────────────────────────────────────────────────────────
+function suscribirRealtime(){
+  sb.channel('prode-live')
+    .on('postgres_changes',{event:'*',schema:'public',table:'predicciones'},payload=>{
+      const r=payload.new;
+      if(!predicciones[r.partido_id])predicciones[r.partido_id]={};
+      predicciones[r.partido_id][r.persona]={local:r.pred_local,visitante:r.pred_visitante};
+      renderPartidos();renderRanking();renderEstrategia();
+    })
+    .on('postgres_changes',{event:'*',schema:'public',table:'resultados'},payload=>{
+      const r=payload.new;
+      resultados[r.partido_id]={local:r.resultado_local,visitante:r.resultado_visitante};
+      renderPartidos();renderRanking();renderEstrategia();
+    })
+    .subscribe(status=>{
+      if(status==='SUBSCRIBED')setSyncDot('ok');
+      else if(status==='CHANNEL_ERROR')setSyncDot('err');
+    });
+}
+
+// ── TABS ──────────────────────────────────────────────────────────────────────
+function showTab(id,btn){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.bnav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  if(btn)btn.classList.add('active');
+  if(id==='ranking')renderRanking();
+  if(id==='estrategia')renderEstrategia();
+}
+window.showTab=showTab;
+
+// ── CONSEJO POR PARTIDO ────────────────────────────────────────────────────────
+function consejoPartido(p){
+  const preds=PERSONAS.map(nombre=>(predicciones[p.id]||{})[nombre]).filter(pr=>pr&&pr.local!=null&&pr.visitante!=null);
+  const n=preds.length;
+  if(n===0)return{icono:'💡',texto:'Nadie cargó predicción todavía. Intentá que cada uno elija un marcador diferente para cubrir más escenarios.'};
+  let cL=0,cE=0,cV=0;
+  const marc={};
+  preds.forEach(pr=>{
+    const w=gw(pr.local,pr.visitante);
+    if(w==='L')cL++;else if(w==='E')cE++;else cV++;
+    const k=pr.local+'-'+pr.visitante;
+    marc[k]=(marc[k]||0)+1;
+  });
+  const maxRep=Math.max(...Object.values(marc));
+  const marcRep=Object.entries(marc).find(([k,v])=>v===maxRep)?.[0]||'';
+  const faltantes=PERSONAS.length-n;
+  const sinCubrir=[];
+  if(cL===0)sinCubrir.push('gana '+p.local.split(' ')[0]);
+  if(cE===0)sinCubrir.push('empate');
+  if(cV===0)sinCubrir.push('gana '+p.visitante.split(' ')[0]);
+
+  if(faltantes>0){
+    if(sinCubrir.length>0)
+      return{icono:'⚠️',texto:`Faltan ${faltantes} persona${faltantes>1?'s':''} por cargar. Nadie eligió ${sinCubrir.join(' ni ')} — sería ideal cubrirlo.`};
+    return{icono:'✅',texto:`Los ${n} que cargaron cubren los 3 escenarios. Los ${faltantes} restantes pueden ir al marcador exacto más probable para sumar +6.`};
+  }
+  if(maxRep>=5)return{icono:'🚨',texto:`5+ personas pusieron ${marcRep}. Si no sale ese resultado, el grupo se va a 0. Para el próximo partido diversificá más.`};
+  if(maxRep>=4)return{icono:'⚠️',texto:`4 personas eligieron ${marcRep}. Alta concentración — si sale diferente, muchos puntos perdidos.`};
+  if(sinCubrir.length>0)return{icono:'🎯',texto:`El grupo no cubre ${sinCubrir.join(' ni ')}. Si sale ese resultado, cero puntos para todos.`};
+  const maxEscPts=Math.max(cL,cE,cV)*3+3;
+  return{icono:'✅',texto:`Cobertura perfecta: ${cL}×gana ${p.local.split(' ')[0]}, ${cE}×empate, ${cV}×gana ${p.visitante.split(' ')[0]}. Máximo posible en el mejor escenario: ${maxEscPts} pts del equipo.`};
+}
+
+// ── RENDER PARTIDOS ───────────────────────────────────────────────────────────
+function renderPartidos(){
+  const fases=[...new Set(todosPartidos().map(p=>p.fase))];
+  let html='';
+  fases.forEach(fase=>{
+    html+=`<div class="grupo-hdr">⚽ ${fase}</div>`;
+    todosPartidos().forEach((p,pidx)=>{
+      if(p.fase!==fase)return;
+      const res=resultados[p.id]||{};
+      const hasRes=res.local!=null&&res.visitante!=null;
+      const predsPartido=predicciones[p.id]||{};
+
+      // Cells predicciones
+      let cells='';
+      PERSONAS.forEach((nombre,idx)=>{
+        const pr=predsPartido[nombre]||{};
+        const hasPred=pr.local!=null&&pr.visitante!=null;
+        const esMio=nombre===miPersona;
+        let ptsHtml='';
+        if(hasRes&&hasPred){
+          const pts=calcPts(pr.local,pr.visitante,res.local,res.visitante);
+          if(pts===6)ptsHtml=`<div class="pred-pts p6">+6✦</div>`;
+          else if(pts===3)ptsHtml=`<div class="pred-pts p3">+3</div>`;
+          else ptsHtml=`<div class="pred-pts p0">0</div>`;
+        }
+        const borderStyle=esMio?`border-color:${COLORS[idx]}40`:'';
+        cells+=`<div class="pred-cell" id="cell-${p.id}-${idx}" style="${borderStyle}">
+          <div class="pred-n" style="color:${COLORS[idx]}">${nombre}${esMio?' ✏️':''}</div>
+          <div class="pred-ins">
+            <input class="pi" type="number" min="0" max="99" inputmode="numeric"
+              value="${hasPred?pr.local:''}" placeholder="?"
+              ${esMio&&!hasRes?'':`style="opacity:${hasPred?1:.35}" readonly`}
+              onchange="onPredChange('${p.id}','${nombre}',this,'local')">
+            <span class="psp">:</span>
+            <input class="pi" type="number" min="0" max="99" inputmode="numeric"
+              value="${hasPred?pr.visitante:''}" placeholder="?"
+              ${esMio&&!hasRes?'':`style="opacity:${hasPred?1:.35}" readonly`}
+              onchange="onPredChange('${p.id}','${nombre}',this,'visitante')">
+          </div>
+          ${ptsHtml}
+        </div>`;
+      });
+
+      // Simulador
+      let simHtml='';
+      const predsValidas=PERSONAS.map(n=>predsPartido[n]).filter(pr=>pr&&pr.local!=null&&pr.visitante!=null);
+      const allDone=predsValidas.length===PERSONAS.length;
+      if(allDone&&!hasRes){
+        const escenarios=[
+          {label:'Gana '+p.local.split(' ').slice(0,2).join(' '),w:'L'},
+          {label:'Empate',w:'E'},
+          {label:'Gana '+p.visitante.split(' ').slice(0,2).join(' '),w:'V'},
+        ];
+        const sims=escenarios.map(esc=>{
+          let tot=0;
+          const det=PERSONAS.map((nombre,idx)=>{
+            const pr=predsPartido[nombre];
+            if(!pr||pr.local==null)return{nombre,pts:null};
+            const pts=gw(pr.local,pr.visitante)===esc.w?3:0;
+            tot+=pts;
+            return{nombre,pts};
+          });
+          return{...esc,tot,det};
+        });
+        const maxTot=Math.max(...sims.map(s=>s.tot));
+        simHtml=`<div class="sim-wrap">
+          <div class="sim-lbl">📊 Total puntos del equipo según resultado</div>
+          <div class="sim-grid">`;
+        sims.forEach(s=>{
+          const best=s.tot===maxTot;
+          simHtml+=`<div class="sim-card" style="${best?'border-color:rgba(240,192,64,.4)':''}">
+            <div class="sim-esc">${s.label}</div>
+            <div class="sim-pts" style="${best?'color:var(--or)':''}">${s.tot}</div>
+            <div style="font-size:9px;color:var(--gm);margin-top:1px">pts equipo</div>
+            <div class="sim-det">`;
+          s.det.forEach((d,i)=>{
+            if(d.pts===null)return;
+            simHtml+=`<div class="sim-r"><span style="color:${COLORS[i]};font-size:10px">${d.nombre.slice(0,3)}</span><span style="color:${d.pts===3?'#6db88a':'var(--go)'};font-weight:700">+${d.pts}</span></div>`;
+          });
+          simHtml+=`</div></div>`;
+        });
+        simHtml+=`</div><div style="font-size:10px;color:var(--gm);margin-top:6px;line-height:1.4">✦ Si alguien acertó el marcador exacto suma <strong style="color:var(--bl)">+6</strong> en vez de +3</div></div>`;
+      }
+
+      // Resultado real
+      let resHtml='';
+      if(hasRes){
+        let totReal=0;
+        const detReal=PERSONAS.map((nombre,idx)=>{
+          const pr=predsPartido[nombre];
+          if(!pr||pr.local==null)return{nombre,pts:null,pred:''};
+          const pts=calcPts(pr.local,pr.visitante,res.local,res.visitante);
+          totReal+=(pts||0);
+          return{nombre,pts,pred:pr.local+'-'+pr.visitante};
+        });
+        resHtml=`<div class="sim-wrap">
+          <div class="sim-lbl">✅ Resultado: ${res.local}-${res.visitante}</div>
+          <div style="display:flex;align-items:center;justify-content:space-between;background:var(--tc);border:1px solid rgba(240,192,64,.3);border-radius:7px;padding:10px 12px;margin-bottom:8px">
+            <span style="font-size:11px;color:var(--gm);letter-spacing:1px;text-transform:uppercase">Total puntos del equipo</span>
+            <span style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--or);line-height:1">${totReal}</span>
+          </div>
+          <div class="sim-grid">`;
+        detReal.forEach((d,i)=>{
+          if(d.pts===null)return;
+          const col=d.pts===6?'var(--or)':d.pts===3?'#6db88a':'var(--go)';
+          resHtml+=`<div class="sim-card" style="background:${d.pts===6?'rgba(240,192,64,.1)':d.pts===3?'rgba(109,184,138,.1)':'transparent'};border-color:${col}30">
+            <div class="pred-n" style="color:${COLORS[i]};margin-bottom:4px">${d.nombre}</div>
+            <div class="sim-pts" style="color:${col}">${d.pts===0?'0':'+'+d.pts}</div>
+            <div style="font-size:9px;color:var(--gm)">${d.pred||'sin pred'}</div>
+          </div>`;
+        });
+        resHtml+=`</div></div>`;
+      }
+
+      // Consejo
+      let consejoHtml='';
+      if(!hasRes){
+        const c=consejoPartido(p);
+        consejoHtml=`<div style="display:flex;align-items:flex-start;gap:8px;background:var(--tc);border:1px solid var(--bo);border-radius:7px;padding:9px 10px;margin-top:10px">
+          <span style="font-size:16px;flex-shrink:0">${c.icono}</span>
+          <span style="font-size:11px;color:var(--gm);line-height:1.5">${c.texto}</span>
+        </div>`;
+      }
+
+      // Inputs resultado (solo editable si es admin = Lucas por ahora, o cualquiera)
+      html+=`<div class="pc">
+        <div class="pc-fase">
+          <span class="pc-fase-tag">${p.fase}</span>
+          <span class="pc-fecha">${p.fecha||''}</span>
+        </div>
+        <div class="pc-body">
+          <div class="eq-row">
+            <div class="eq-name">${p.local}</div>
+            <div class="vs">VS</div>
+            <div class="eq-name">${p.visitante}</div>
+          </div>
+          <div class="res-row">
+            <span class="res-lbl">Resultado</span>
+            <input class="si" type="number" min="0" max="99" inputmode="numeric"
+              value="${hasRes?res.local:''}" placeholder="?"
+              onchange="onResChange('${p.id}',this,'local')">
+            <span class="ss">:</span>
+            <input class="si" type="number" min="0" max="99" inputmode="numeric"
+              value="${hasRes?res.visitante:''}" placeholder="?"
+              onchange="onResChange('${p.id}',this,'visitante')">
+            ${hasRes?`<span class="res-badge">${res.local}-${res.visitante}</span>`:''}
+          </div>
+          <div class="preds-lbl">Predicciones</div>
+          <div class="preds-grid">${cells}</div>
+          ${consejoHtml}${simHtml}${resHtml}
+        </div>
+      </div>`;
+    });
+  });
+  document.getElementById('grupos-lista').innerHTML=html||'<div class="empty"><div class="big">⚽</div>Sin partidos</div>';
+}
+
+// ── RENDER RANKING ────────────────────────────────────────────────────────────
+function renderRanking(){
+  const statsP=(nombre)=>{
+    let tot=0,ex=0,gan=0,mal=0,jug=0;
+    todosPartidos().forEach(p=>{
+      const res=resultados[p.id]||{};
+      if(res.local==null||res.visitante==null)return;
+      const pr=(predicciones[p.id]||{})[nombre];
+      if(!pr||pr.local==null)return;
+      const pts=calcPts(pr.local,pr.visitante,res.local,res.visitante);
+      if(pts===null)return;
+      jug++;tot+=pts;
+      if(pts===6)ex++;else if(pts===3)gan++;else mal++;
+    });
+    return{tot,ex,gan,mal,jug};
+  };
+  const datos=PERSONAS.map((n,i)=>({nombre:n,idx:i,...statsP(n)}));
+  datos.sort((a,b)=>b.tot-a.tot);
+  const maxP=Math.max(...datos.map(d=>d.tot),1);
+  const pc=['g1','g2','g3'];
+  let html='';
+  datos.forEach((d,r)=>{
+    html+=`<div class="rk-row">
+      <div class="rk-pos ${pc[r]||''}">${r+1}</div>
+      <div class="rk-dot" style="background:${COLORS[d.idx]}"></div>
+      <div class="rk-info">
+        <div class="rk-nombre">${d.nombre}${d.nombre===miPersona?' 👤':''}</div>
+        <div class="rk-bar-bg"><div class="rk-bar-f" style="width:${d.tot/maxP*100}%;background:${COLORS[d.idx]}"></div></div>
+        <div class="rk-stats">✦${d.ex} exactos · ▲${d.gan} ganadores · ✕${d.mal} malos · ${d.jug} jugados</div>
+      </div>
+      <div class="rk-pts">${d.tot}</div>
+    </div>`;
+  });
+  document.getElementById('tabla-ranking').innerHTML=html||'<div class="empty"><div class="big">🏆</div>Sin resultados aún</div>';
+
+  let html2='';
+  todosPartidos().forEach(p=>{
+    const res=resultados[p.id]||{};
+    if(res.local==null||res.visitante==null)return;
+    let tot=0;
+    const predsPartido=predicciones[p.id]||{};
+    const det=PERSONAS.map((nombre,idx)=>{
+      const pr=predsPartido[nombre];
+      if(!pr||pr.local==null)return{nombre,pts:null};
+      const pts=calcPts(pr.local,pr.visitante,res.local,res.visitante);
+      tot+=(pts||0);
+      return{nombre,pts};
+    });
+    html2+=`<div style="padding:10px 0;border-bottom:1px solid var(--bo)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <div><span style="font-weight:700;font-size:13px">${p.local} vs ${p.visitante}</span> <span style="font-size:10px;color:var(--gm)">${p.fase}</span></div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--or)">${res.local}-${res.visitante}</div>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:4px">`;
+    det.forEach((d,i)=>{
+      if(d.pts===null)return;
+      const col=d.pts===6?'var(--or)':d.pts===3?'#6db88a':'var(--go)';
+      html2+=`<span style="font-size:11px;background:var(--tc2);border:1px solid ${col}50;border-radius:4px;padding:2px 7px;color:${col};font-weight:600">${d.nombre} +${d.pts}</span>`;
+    });
+    html2+=`<span style="font-size:11px;background:var(--tc);border:1px solid rgba(240,192,64,.2);border-radius:4px;padding:2px 7px;color:var(--or);font-weight:700;margin-left:auto">Equipo: ${tot}</span>`;
+    html2+='</div></div>';
+  });
+  document.getElementById('resumen-partidos').innerHTML=html2||'<div class="empty"><div class="big">📊</div>Sin resultados cargados</div>';
+}
+
+// ── RENDER ESTRATEGIA ─────────────────────────────────────────────────────────
+function renderEstrategia(){
+  let totalPts=0,jugados=0;
+  PERSONAS.forEach(nombre=>{
+    todosPartidos().forEach(p=>{
+      const res=resultados[p.id]||{};
+      if(res.local==null)return;
+      const pr=(predicciones[p.id]||{})[nombre];
+      if(!pr||pr.local==null)return;
+      const pts=calcPts(pr.local,pr.visitante,res.local,res.visitante);
+      if(pts!=null){totalPts+=pts;}
+    });
+  });
+  jugados=todosPartidos().filter(p=>{const r=resultados[p.id]||{};return r.local!=null;}).length;
+  const totalEq=totalPts;
+  const maxPos=jugados*6*PERSONAS.length;
+  const efic=maxPos>0?Math.round(totalPts/maxPos*100):0;
+
+  let superp=0,incomp=0;
+  todosPartidos().forEach(p=>{
+    const res=resultados[p.id]||{};
+    if(res.local!=null)return;
+    const preds=PERSONAS.map(n=>(predicciones[p.id]||{})[n]).filter(pr=>pr&&pr.local!=null);
+    if(preds.length>0&&preds.length<PERSONAS.length)incomp++;
+    if(preds.length<4)return;
+    const m={};preds.forEach(pr=>{const k=pr.local+'-'+pr.visitante;m[k]=(m[k]||0)+1;});
+    if(Math.max(...Object.values(m))>=4)superp++;
+  });
+
+  const consejos=[
+    {i:'⚖️',t:'Diversificar es ganar',d:`Son ${PERSONAS.length} personas. Si cada uno va a un resultado distinto, el grupo <span class="hl">garantiza puntos</span> en casi cualquier escenario.`},
+    ...(superp>0?[{i:'⚠️',t:`${superp} partido${superp>1?'s':''} con alta concentración`,d:`4 o más personas pusieron el <span class="hl">mismo resultado exacto</span>. Conviene distribuirse en variantes del mismo ganador.`}]:[]),
+    ...(incomp>0?[{i:'🔴',t:`${incomp} partido${incomp>1?'s':''} sin completar`,d:`Hay partidos donde <span class="hl">no todos pusieron predicción</span>. Son puntos gratis que se pueden perder.`}]:[]),
+    {i:'🎯',t:'Distribución ideal por partido',d:`<span class="hl">1 persona</span> pone el marcador exacto más probable · <span class="hl">2-3 personas</span> van a variantes del mismo ganador · <span class="hl">1-2 personas</span> cubren la sorpresa o el empate.`},
+    {i:'🤝',t:'El valor del empate',d:`Los empates dan <span class="hl">+6 si acertás exacto</span>. En partidos parejos al menos 1 persona debería cubrir el empate.`},
+    ...(jugados>0?[{i:'📈',t:'Estado actual',d:`${jugados} partidos jugados · Total puntos del equipo: <span class="hl">${totalEq} pts</span> · Eficiencia: <span class="hl">${efic}%</span> del máximo posible.`}]:[]),
+  ];
+  document.getElementById('analisis-estrategia').innerHTML=consejos.map(c=>`<div class="ec"><div class="ec-ic">${c.i}</div><div><div class="ec-t">${c.t}</div><div class="ec-d">${c.d}</div></div></div>`).join('');
+}
+
+// ── INPUT HANDLERS ────────────────────────────────────────────────────────────
+// Buffers para no disparar un request por cada tecla
+const predBuffer={};
+const resBuffer={};
+
+window.onPredChange=function(partidoId,persona,input,lado){
+  if(persona!==miPersona)return;
+  const cell=document.getElementById(`cell-${partidoId}-${PERSONAS.indexOf(persona)}`);
+  if(cell)cell.classList.add('saving');
+  const key=`${partidoId}-${persona}`;
+  clearTimeout(predBuffer[key]);
+  predBuffer[key]=setTimeout(async()=>{
+    // Leer ambos inputs del mismo partido/persona
+    const cells=document.querySelectorAll(`#cell-${partidoId}-${PERSONAS.indexOf(persona)} .pi`);
+    const vL=cells[0]?.value,vV=cells[1]?.value;
+    if(vL===''||vV==='')return;
+    if(!predicciones[partidoId])predicciones[partidoId]={};
+    predicciones[partidoId][persona]={local:parseInt(vL),visitante:parseInt(vV)};
+    await guardarPrediccion(partidoId,persona,vL,vV);
+    if(cell)cell.classList.remove('saving');
+    renderPartidos();
+  },800);
+};
+
+window.onResChange=function(partidoId,input,lado){
+  clearTimeout(resBuffer[partidoId]);
+  resBuffer[partidoId]=setTimeout(async()=>{
+    const row=input.closest('.res-row');
+    const inputs=row.querySelectorAll('.si');
+    const vL=inputs[0]?.value,vV=inputs[1]?.value;
+    if(vL===''||vV==='')return;
+    if(!resultados[partidoId])resultados[partidoId]={};
+    resultados[partidoId]={local:parseInt(vL),visitante:parseInt(vV)};
+    await guardarResultado(partidoId,vL,vV);
+    renderPartidos();
+  },800);
+};
+
+window.agregarPartido=function(){
+  const l=document.getElementById('inp-local').value.trim();
+  const v=document.getElementById('inp-visitante').value.trim();
+  if(!l||!v){alert('Completá los dos equipos');return;}
+  const fase=document.getElementById('inp-fase').value;
+  const fecha=document.getElementById('inp-fecha').value.trim();
+  const id='X'+Date.now();
+  partidosExtra.push({id,local:l,visitante:v,fase,fecha});
+  localStorage.setItem('prode_extra',JSON.stringify(partidosExtra));
+  document.getElementById('inp-local').value='';
+  document.getElementById('inp-visitante').value='';
+  showTab('partidos',document.querySelectorAll('.bnav-tab')[0]);
+  renderPartidos();
+  toast('✓ Partido agregado');
+};
+
+// ── PERSONA SETUP ─────────────────────────────────────────────────────────────
+function mostrarSetup(){
+  document.getElementById('persona-setup').style.display='block';
+  document.getElementById('app-content').style.display='none';
+  document.getElementById('bottom-nav').style.display='none';
+  const btns=PERSONAS.map((p,i)=>`<button class="persona-btn" style="border-color:${COLORS[i]}40;color:${COLORS[i]}" onclick="elegirPersona('${p}')">${p}</button>`).join('');
+  document.getElementById('persona-btns-setup').innerHTML=btns;
+}
+
+window.elegirPersona=function(nombre){
+  miPersona=nombre;
+  localStorage.setItem('prode_persona',nombre);
+  mostrarApp();
+};
+
+window.cambiarPersona=function(){
+  mostrarSetup();
+};
+
+function mostrarApp(){
+  document.getElementById('persona-setup').style.display='none';
+  document.getElementById('app-content').style.display='block';
+  document.getElementById('bottom-nav').style.display='flex';
+  const idx=PERSONAS.indexOf(miPersona);
+  document.getElementById('banner-dot').style.background=COLORS[idx]||'var(--gm)';
+  document.getElementById('banner-nombre').textContent=miPersona;
+  renderPartidos();
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+await cargarTodo();
+suscribirRealtime();
+if(miPersona&&PERSONAS.includes(miPersona)){
+  mostrarApp();
+}else{
+  mostrarSetup();
+}
+</script>
+</body>
+</html>
