@@ -222,8 +222,9 @@ hr.dv{border:none;border-top:1px solid var(--bo);margin:12px 0}
   <button class="bnav-tab" onclick="showTab('config',this)"><span class="ic">⚙️</span>Config</button>
 </nav>
 
-<script type="module">
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+const { createClient } = supabase;
 
 // ── CONFIG ───────────────────────────────────────────────────────────────────
 const SUPA_URL = 'https://kuxxmiupluaxwlrpnjrt.supabase.co';
@@ -802,13 +803,16 @@ function mostrarApp(){
 }
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
-await cargarTodo();
-suscribirRealtime();
-if(miPersona&&PERSONAS.includes(miPersona)){
-  mostrarApp();
-}else{
-  mostrarSetup();
+async function init(){
+  await cargarTodo();
+  suscribirRealtime();
+  if(miPersona&&PERSONAS.includes(miPersona)){
+    mostrarApp();
+  }else{
+    mostrarSetup();
+  }
 }
+init();
 </script>
 </body>
 </html>
